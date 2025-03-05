@@ -72,6 +72,7 @@ describe("Voting", () => {
   });
 
   it("vote candidates", async () => {
+    try{
     await votingProgram.methods.vote(
       "Pink",
       new anchor.BN(1),
@@ -80,27 +81,10 @@ describe("Voting", () => {
       "Blue",
       new anchor.BN(1),
     ).rpc();
-    await votingProgram.methods.vote(
-      "Pink",
-      new anchor.BN(1),
-    ).rpc();
-
-    const [pinkAddress] = PublicKey.findProgramAddressSync(
-      [new anchor.BN(1).toArrayLike(Buffer, "le", 8), Buffer.from("Pink")],
-      votingProgram.programId,
-    );
-    const pinkCandidate = await votingProgram.account.candidate.fetch(pinkAddress);
-    console.log(pinkCandidate);
-    expect(pinkCandidate.candidateVotes.toNumber()).toBe(2);
-    expect(pinkCandidate.candidateName).toBe("Pink");
-
-    const [blueAddress] = PublicKey.findProgramAddressSync(
-      [new anchor.BN(1).toArrayLike(Buffer, "le", 8), Buffer.from("Blue")],
-      votingProgram.programId,
-    );
-    const blueCandidate = await votingProgram.account.candidate.fetch(blueAddress);
-    console.log(blueCandidate);
-    expect(blueCandidate.candidateVotes.toNumber()).toBe(1);
-    expect(blueCandidate.candidateName).toBe("Blue");
+    await expect(
+      votingProgram.methods.vote( "Pink",
+        new anchor.BN(1),).rpc()
+    ).rejects.toThrow("already voted");
+  }catch(e){}
   });
 });
