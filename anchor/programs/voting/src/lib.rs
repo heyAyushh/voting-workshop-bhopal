@@ -14,6 +14,10 @@ pub mod voting {
                             description: String,
                             poll_start: u64,
                             poll_end: u64) -> Result<()> {
+        let clock = Clock::get().unwrap();
+        let current_time = clock.unix_timestamp as u64;
+        require!(poll_end > 1_000_000_000, ErrorCode::InvalidUnixTimestamp);
+        require!(poll_end/1000 > current_time, ErrorCode::InvalidPollEndTime);
 
         let poll = &mut ctx.accounts.poll;
         poll.poll_id = poll_id;

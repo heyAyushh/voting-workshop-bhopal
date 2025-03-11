@@ -20,7 +20,42 @@ describe("Voting", () => {
       provider,
     );
   });
-
+  it("fails to initialize a poll without end time > current time", async () => {
+    try{
+    await votingProgram.methods.initializePoll(
+      new anchor.BN(12),
+      "What is your favorite climate?",
+      new anchor.BN(startTime),
+      new anchor.BN(startTime-50000),
+    ).rpc();
+   
+    throw new Error("Test should have failed but it passed.");
+  }catch(err){
+    if (err instanceof Error) {
+      expect(err.message).toContain("Invalid poll end time.");
+    } else {
+      throw new Error("Unexpected error type");
+    }
+  }
+  });
+  it("fails to initialize a poll without unix time", async () => {
+    try{
+    await votingProgram.methods.initializePoll(
+      new anchor.BN(13),
+      "What is your favorite food?",
+      new anchor.BN(startTime),
+      new anchor.BN(1000),
+    ).rpc();
+   
+    throw new Error("Test should have failed but it passed.");
+  }catch(err){
+    if (err instanceof Error) {
+      expect(err.message).toContain("Poll end is not a valid unix timestamp.");
+    } else {
+      throw new Error("Unexpected error type");
+    }
+  }
+  });
   it("initializes a poll", async () => {
     await votingProgram.methods.initializePoll(
       new anchor.BN(1),
