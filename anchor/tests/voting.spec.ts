@@ -51,7 +51,12 @@ describe("Voting", () => {
       "Blue",
       new anchor.BN(1),
     ).rpc();
-
+    const [pollAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
+      votingProgram.programId,
+    );
+    const poll = await votingProgram.account.poll.fetch(pollAddress);
+    expect(poll.candidateAmount.toNumber()).toBe(2);
     const [pinkAddress] = PublicKey.findProgramAddressSync(
       [new anchor.BN(1).toArrayLike(Buffer, "le", 8), Buffer.from("Pink")],
       votingProgram.programId,
