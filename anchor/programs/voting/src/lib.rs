@@ -44,9 +44,14 @@ pub mod voting {
             current_time > ctx.accounts.poll.poll_start/1000 && current_time < ctx.accounts.poll.poll_end/1000,
             ErrorCode::PollNotActive);
         let candidate = &mut ctx.accounts.candidate;
+        let voter = &mut ctx.accounts.voter;
         candidate.candidate_votes += 1;
+        voter.poll_id = _poll_id;
+        voter.voter = ctx.accounts.signer.key();
+
         let poll = &mut ctx.accounts.poll;
         poll.total_votes+=1;
+
         msg!("Voted for candidate: {}", candidate.candidate_name);
         msg!("Votes: {}", candidate.candidate_votes);
         msg!("Total votes in poll: {}", poll.total_votes);
@@ -74,6 +79,14 @@ pub struct Vote<'info> {
       bump
     )]
     pub candidate: Account<'info, Candidate>,
+    #[account(
+        init,
+        payer = signer,
+        space = 8 + Voter::INIT_SPACE,
+        seeds = [poll_id.to_le_bytes().as_ref(),signer.key().as_ref()],
+        bump
+      )]
+      pub voter: Account<'info, Voter>,
 
     pub system_program: Program<'info, System>,
 }
@@ -137,4 +150,10 @@ pub struct Poll {
     pub poll_end: u64,
     pub candidate_amount: u64,
     pub total_votes: u64,
+}
+#[account]
+#[derive(InitSpace)]
+pub struct Voter {
+    pub poll_id: u64,
+    pub voter: Pubkey,
 }
