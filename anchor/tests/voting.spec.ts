@@ -107,5 +107,14 @@ describe("Voting", () => {
     console.log(blueCandidate);
     expect(blueCandidate.candidateVotes.toNumber()).toBe(1);
     expect(blueCandidate.candidateName).toBe("Blue");
+    const [pollAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
+      votingProgram.programId,
+    );
+
+    const poll = await votingProgram.account.poll.fetch(pollAddress);
+
+    console.log(poll);
+    expect(poll.totalVotes.toNumber()).toBe(3);
   });
 });
