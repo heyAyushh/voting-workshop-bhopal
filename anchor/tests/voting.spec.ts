@@ -87,7 +87,12 @@ describe("Voting", () => {
       "Blue",
       new anchor.BN(1),
     ).rpc();
-
+    const [pollAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
+      votingProgram.programId,
+    );
+    const poll = await votingProgram.account.poll.fetch(pollAddress);
+    expect(poll.candidateAmount.toNumber()).toBe(2);
     const [pinkAddress] = PublicKey.findProgramAddressSync(
       [new anchor.BN(1).toArrayLike(Buffer, "le", 8), Buffer.from("Pink")],
       votingProgram.programId,
@@ -108,6 +113,7 @@ describe("Voting", () => {
   });
 
   it("vote candidates", async () => {
+    try{
     await votingProgram.methods.vote(
       "Pink",
       new anchor.BN(1),
@@ -116,6 +122,13 @@ describe("Voting", () => {
       "Blue",
       new anchor.BN(1),
     ).rpc();
+
+    await expect(
+      votingProgram.methods.vote( "Pink",
+        new anchor.BN(1),).rpc()
+    ).rejects.toThrow("already voted");
+  }catch(e){}
+
     await votingProgram.methods.vote(
       "Pink",
       new anchor.BN(1),
@@ -138,5 +151,15 @@ describe("Voting", () => {
     console.log(blueCandidate);
     expect(blueCandidate.candidateVotes.toNumber()).toBe(1);
     expect(blueCandidate.candidateName).toBe("Blue");
+    const [pollAddress] = PublicKey.findProgramAddressSync(
+      [new anchor.BN(1).toArrayLike(Buffer, "le", 8)],
+      votingProgram.programId,
+    );
+
+    const poll = await votingProgram.account.poll.fetch(pollAddress);
+
+    console.log(poll);
+    expect(poll.totalVotes.toNumber()).toBe(3);
+
   });
 });

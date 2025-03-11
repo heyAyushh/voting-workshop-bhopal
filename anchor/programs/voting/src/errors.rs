@@ -6,4 +6,6 @@ pub enum ErrorCode {
     InvalidPollEndTime,
     #[msg("Poll end is not a valid unix timestamp")]
     InvalidUnixTimestamp
+    #[msg("Poll inactive")]
+    PollNotActive,
 }
