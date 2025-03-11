@@ -10,7 +10,8 @@ describe("Voting", () => {
   let context;
   let provider;
   let votingProgram: anchor.Program<Voting>;
-
+  let startTime = Date.now()-1000;
+  let endTime=Date.now()+2000;
   beforeAll(async () => {
     context = await startAnchor('', [{ name: "voting", programId: PROGRAM_ID }], []);
     provider = new BankrunProvider(context);
@@ -24,8 +25,8 @@ describe("Voting", () => {
     await votingProgram.methods.initializePoll(
       new anchor.BN(1),
       "What is your favorite color?",
-      new anchor.BN(100),
-      new anchor.BN(1739370789),
+      new anchor.BN(startTime),
+      new anchor.BN(endTime),
     ).rpc();
 
     const [pollAddress] = PublicKey.findProgramAddressSync(
@@ -39,7 +40,7 @@ describe("Voting", () => {
 
     expect(poll.pollId.toNumber()).toBe(1);
     expect(poll.description).toBe("What is your favorite color?");
-    expect(poll.pollStart.toNumber()).toBe(100);
+    expect(poll.pollStart.toNumber()).toBe(startTime);
   });
 
   it("initializes candidates", async () => {

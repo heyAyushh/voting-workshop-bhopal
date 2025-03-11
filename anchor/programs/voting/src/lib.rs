@@ -1,13 +1,14 @@
 #![allow(clippy::result_large_err)]
 
 use anchor_lang::prelude::*;
+pub mod errors;
 
 declare_id!("coUnmi3oBUtwtd9fjeAvSsJssXh5A5xyPbhpewyzRVF");
 
 #[program]
 pub mod voting {
     use super::*;
-
+    use crate::errors::ErrorCode;
     pub fn initialize_poll(ctx: Context<InitializePoll>, 
                             poll_id: u64,
                             description: String,
@@ -37,6 +38,11 @@ pub mod voting {
     }
 
     pub fn vote(ctx: Context<Vote>, _candidate_name: String, _poll_id: u64) -> Result<()> {
+        let clock = Clock::get().unwrap();
+        let current_time = clock.unix_timestamp as u64;
+        require!(
+            current_time > ctx.accounts.poll.poll_start/1000 && current_time < ctx.accounts.poll.poll_end/1000,
+            ErrorCode::PollNotActive);
         let candidate = &mut ctx.accounts.candidate;
         candidate.candidate_votes += 1;
         let poll = &mut ctx.accounts.poll;
